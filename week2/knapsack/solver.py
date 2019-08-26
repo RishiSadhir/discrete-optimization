@@ -15,10 +15,14 @@ def solve_it(input_data):
         optim, conf, decisions = solve_by_dynamic(input['item_count'], input['capacity'], input['values'],
                                                   input['weights'])
     else:
-        optim, conf, decisions = solve_by_raw_value(input['item_count'], input['capacity'], input['values'],
+        optim, conf, decisions = solve_by_density(input['item_count'], input['capacity'], input['values'],
                                                     input['weights'])
     return format_output(optim, conf, decisions)
 
+
+################################
+## Dynamic Programming
+###############################
 
 def solve_by_dynamic(n, k, v, w):
     # Build a list of structs for easy access
@@ -63,6 +67,27 @@ def O(k, j):
         _global_cache[(k, j)] = ret
         return ret
 
+################################
+## Greedy
+################################
+
+def solve_by_density(n, k, values, weights):
+    idx = [x for x in range(0, n)]
+    density = [x[0]/x[1] for x in zip(values, weights)]
+    indicies = [x for _,x in sorted(zip(density, idx), reverse = True)]
+    # Init looping variables
+    decisions = [0] * n
+    optim = 0
+    i = 0
+    # Logic
+    for i in indicies:
+        if k <= 0:
+            break
+        if k - weights[i] > 0:
+            k = k - weights[i]
+            optim += values[i]
+            decisions[i] = 1
+    return optim, 0, decisions
 
 
 def solve_by_raw_value(n, k, values, weights):
@@ -96,6 +121,9 @@ def solve_by_order(n, k, values, weights):
         i += 1
     return optim, 0, decisions
 
+################################
+## Utilities
+################################
 
 def format_output(optim, conf, decisions):
     output_data = str(optim) + " " + str(conf) + "\n"
@@ -149,7 +177,9 @@ if __name__ == '__main__':
         print('This test requires an input file.  Please select one from the data directory. (i.e. python solver.py ./data/ks_4_0)')
 
 
+################################
 ## Tests
+################################
 
 def test():
     input = get_test_input()
